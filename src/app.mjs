@@ -1,53 +1,48 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import session from 'express-session';
 import passport from 'passport';
-import linkedinRoutes from './routes/linkedin.routes.mjs';
-import './controller/linkedin.controller.mjs'; // Import to initialize passport strategy
-
+import linkedinRoutes from './routes/linkedin.routes.js';
+import authRoutes from './routes/auth.routes.js';
+import userRoutes from './routes/user.routes.js';
+import './config/passport.js'; // Initialize passport strategy
+import connectDB from './DB/DB_Connection.js';
+import cookieParser from 'cookie-parser';
+import linkedinShdedule from './routes/sheduling/linkedinshedule.routes.js'
 dotenv.config();
+connectDB();
 
 const app = express();
 
 // CORS configuration
-app.use(cors({
-  origin: 'http://localhost:3000', // Frontend URL
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
-// Session configuration
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { 
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax'
-  }
-}));
-
-// Initialize Passport
-app.use(passport.initialize());
-app.use(passport.session());
-
+// Middleware
+app.use(cookieParser());
 app.use(express.json());
+app.use(passport.initialize()); // Only initialize passport, no session
+
+// Routes
+app.use('/auth', authRoutes);
 app.use('/api/linkedin', linkedinRoutes);
+app.use('/api/user', userRoutes);
+app.use('/post/linkedin', linkedinShdedule);
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('❌ Server Error:', err.stack);
-  res.status(500).json({ 
+  res.status(500).json({
     error: 'Something went wrong!',
-    message: err.message 
+    message: err.message,
   });
-});
-
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
 });
 
 export default app;

@@ -1,5 +1,5 @@
 // models/User.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const socialMediaSchema = new mongoose.Schema({
   platform: {
@@ -55,6 +55,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  password: {
+    type: String,
+    required: true,
+  },
   googleAuth: {
     type: googleAuthSchema,
     default: null,
@@ -66,4 +70,5 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('User', userSchema);
+// Export using ES6 module syntax
+export default mongoose.models?.User || mongoose.model('User', userSchema);

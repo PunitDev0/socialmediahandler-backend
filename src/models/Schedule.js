@@ -1,5 +1,5 @@
 // models/Schedule.js
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 
 const scheduleSchema = new mongoose.Schema({
   userId: {
@@ -35,4 +35,4 @@ const scheduleSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('Schedule', scheduleSchema);
+export default mongoose.models?.Schedule || mongoose.model('Schedule', scheduleSchema);
