@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import Schedule from '../models/Schedule.js';
-import { executeScheduledPost } from '../controllers/postController.js';
+import { executeScheduledPost } from '../controller/Sheduling/linkedinPost.controller.js';
 
 export const startCronJobs = () => {
   // Run every minute to check for pending schedules

@@ -3,9 +3,18 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import passport from '../config/passport.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export const login = (req, res, next) => {
+  // Validate JWT_SECRET
+  if (!JWT_SECRET) {
+    console.error('JWT_SECRET is not defined');
+    return res.status(500).json({
+      success: false,
+      message: 'Server configuration error',
+    });
+  }
+
   passport.authenticate('local', { session: false }, (err, user, info) => {
     try {
       if (err) {
@@ -19,7 +28,7 @@ export const login = (req, res, next) => {
       if (!user) {
         return res.status(401).json({
           success: false,
-          message: info.message || 'Invalid credentials',
+          message: info?.message || 'Invalid credentials',
         });
       }
 
@@ -32,8 +41,8 @@ export const login = (req, res, next) => {
       const options = {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Lax',
-        maxAge: 24 * 60 * 60 * 1000,
+        sameSite: 'none', // Required for cross-origin cookies
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
         path: '/',
       };
 
@@ -42,9 +51,16 @@ export const login = (req, res, next) => {
         options,
       });
 
-      return res
+      res.cookie('accesstoken', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+
+       res
         .status(200)
-        .cookie('accessToken', token, options)
+        // .cookie('accessToken', token, options)
         .json({
           success: true,
           user: {
@@ -55,7 +71,7 @@ export const login = (req, res, next) => {
         });
     } catch (error) {
       console.error('Login error:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Server error',
       });
@@ -65,6 +81,15 @@ export const login = (req, res, next) => {
 
 export const register = async (req, res) => {
   try {
+    // Validate JWT_SECRET
+    if (!JWT_SECRET) {
+      console.error('JWT_SECRET is not defined');
+      return res.status(500).json({
+        success: false,
+        message: 'Server configuration error',
+      });
+    }
+
     const { email, password, name } = req.body;
 
     if (!email || !password || !name) {
@@ -102,8 +127,8 @@ export const register = async (req, res) => {
     const options = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
-      maxAge: 24 * 60 * 60 * 1000,
+      sameSite: 'none', // Align with login for cross-origin
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours to match token expiry
       path: '/',
     };
 
@@ -112,7 +137,7 @@ export const register = async (req, res) => {
       options,
     });
 
-    res
+    return res
       .status(201)
       .cookie('accessToken', token, options)
       .json({
@@ -125,36 +150,10 @@ export const register = async (req, res) => {
       });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Server error',
     });
   }
 };
 
-export const authenticate = (req, res, next) => {
-  try {
-    console.log('Authenticate - Cookies:', req.cookies);
-    const token = req.cookies.accessToken;
-
-    if (!token) {
-      console.log('Authenticate - No accessToken cookie found');
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication required',
-      });
-    }
-
-    console.log('Authenticate - Verifying token:', token.substring(0, 20) + '...');
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded;
-    console.log('Authenticate - User:', decoded.id);
-    next();
-  } catch (error) {
-    console.error('Authenticate - Token verification error:', error.message);
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid or expired token',
-    });
-  }
-};

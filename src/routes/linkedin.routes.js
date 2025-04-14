@@ -11,7 +11,7 @@ const router = Router();
 
 // LinkedIn OAuth Routes
 router.get('/auth',authenticate, startLinkedInAuth);
-router.get('/callback/linkedin',authenticate, handleLinkedInCallback);
+router.get('/callback/linkedin', handleLinkedInCallback);
 // router.get('/token', getTokenStatus);
 // router.get('/logout', logout);
 

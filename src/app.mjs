@@ -30,7 +30,7 @@ app.use(express.json());
 app.use(passport.initialize()); // Only initialize passport, no session
 
 // Routes
-app.use('/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/linkedin', linkedinRoutes);
 app.use('/api/user', userRoutes);
 app.use('/post/linkedin', linkedinShdedule);
@@ -45,4 +45,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-export default app;
+export default app; 
