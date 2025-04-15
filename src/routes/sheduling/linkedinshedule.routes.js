@@ -1,5 +1,5 @@
 import express from 'express';
-import { uploadMiddleware } from '../../middleware/uploadmiddleware.js';
+import { uploadMiddleware } from '../../middleware/uploadMiddleware.js'
 import { scheduleLinkedInPost } from '../../controller/Sheduling/linkedinPost.controller.js';
 import { authenticate } from '../../middleware/auth.js';
 
