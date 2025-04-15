@@ -8,9 +8,13 @@ export const startCronJobs = () => {
     try {
       console.log('Checking for scheduled posts...');
       const now = new Date();
+      const ISTOffset = 5.5 * 60 * 60 * 1000; // IST is UTC +5:30
+      const nowIST = new Date(now.getTime() + ISTOffset);
+      console.log(nowIST);
+      
       const schedules = await Schedule.find({
         status: 'pending',
-        scheduledTime: { $lte: now },
+        scheduledTime: { $lte: nowIST  },
       });
 
       for (const schedule of schedules) {

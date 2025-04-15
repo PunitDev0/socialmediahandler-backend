@@ -9,6 +9,7 @@ import './config/passport.js'; // Initialize passport strategy
 import connectDB from './DB/DB_Connection.js';
 import cookieParser from 'cookie-parser';
 import linkedinShdedule from './routes/sheduling/linkedinshedule.routes.js'
+import { startCronJobs } from './config/cron.js';  // <-- Update the path accordingly
 dotenv.config();
 connectDB();
 
@@ -34,7 +35,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/linkedin', linkedinRoutes);
 app.use('/api/user', userRoutes);
 app.use('/post/linkedin', linkedinShdedule);
-
+startCronJobs(); // <-- This will run the cron scheduler
 
 // Error handling middleware
 app.use((err, req, res, next) => {
