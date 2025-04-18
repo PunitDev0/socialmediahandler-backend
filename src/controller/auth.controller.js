@@ -2,10 +2,14 @@ import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import passport from '../config/passport.js';
-
+import dotenv from 'dotenv';
+dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
+console.log(JWT_SECRET);
 
 export const login = (req, res, next) => {
+  console.log(req.body);
+  
   // Validate JWT_SECRET
   if (!JWT_SECRET) {
     console.error('JWT_SECRET is not defined');
@@ -58,9 +62,8 @@ export const login = (req, res, next) => {
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
       });
 
-       res
+      res
         .status(200)
-        // .cookie('accessToken', token, options)
         .json({
           success: true,
           user: {
@@ -156,4 +159,40 @@ export const register = async (req, res) => {
     });
   }
 };
+export const getCurrentUser = async (req, res) => {
+  try {
+    // req.user is set by the authenticate middleware after verifying the JWT
+    const user = await User.findById(req.user.id).select('-password'); // Exclude password
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
 
+    // Prepare social media data, excluding sensitive fields
+    const socialMedia = user.socialMedia
+      ? user.socialMedia.map(({ platform, accountId, connectedAt }) => ({
+          platform,
+          accountId,
+          connectedAt,
+        }))
+      : [];
+
+    return res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        socialMedia, // Include list of connected social media platforms
+      },
+    });
+  } catch (error) {
+    console.error('Get current user error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error',
+    });
+  }
+};

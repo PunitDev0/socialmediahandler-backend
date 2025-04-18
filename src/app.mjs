@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import passport from 'passport';
-import linkedinRoutes from './routes/linkedin.routes.js';
 import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import './config/passport.js'; // Initialize passport strategy
@@ -31,8 +30,11 @@ app.use(express.json());
 app.use(passport.initialize()); // Only initialize passport, no session
 
 // Routes
+import linkedinRoutes from './routes/linkedin.routes.js';
+import facebookRoutes from './routes/facebook.routes.js';
 app.use('/api/auth', authRoutes);
 app.use('/api/linkedin', linkedinRoutes);
+app.use('/api/facebook', facebookRoutes);
 app.use('/api/user', userRoutes);
 app.use('/post/linkedin', linkedinShdedule);
 startCronJobs(); // <-- This will run the cron scheduler
